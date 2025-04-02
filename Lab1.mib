@@ -1,0 +1,86 @@
+SECURITY-SYSTEM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, Counter32, IpAddress
+        FROM SNMPv2-SMI
+    OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+securitySystemMIB MODULE-IDENTITY
+    LAST-UPDATED "202503190000Z"
+    ORGANIZATION "University Lab"
+    CONTACT-INFO "andrei.prahoveanu@stud.etti.upb.ro"
+    DESCRIPTION "MIB for monitoring people entering and leaving a room"
+    REVISION "202503190000Z"
+    DESCRIPTION "Initial version"
+    ::= { mib-2 50 }  -- Fixed root OID
+
+-- Main group
+securitySystem OBJECT IDENTIFIER ::= { securitySystemMIB 1 }
+
+-- Managed objects
+peopleEntered OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)  
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The number of people that have entered the room"
+    ::= { securitySystem 1 }
+
+peopleLeft OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)  
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "The number of people that have left the room"
+    ::= { securitySystem 2 }
+
+deviceIPAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "The device's IP address"
+    ::= { securitySystem 3 }
+
+-- Historical data table
+historyTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF HistoryEntry
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION "Table with historical data of people entering and leaving the room"
+    ::= { securitySystem 4 }
+
+historyEntry OBJECT-TYPE
+    SYNTAX HistoryEntry
+    MAX-ACCESS read-create  
+    STATUS current
+    DESCRIPTION "An entry in the history table"
+    INDEX { dayOfYear }
+    ::= { historyTable 1 }
+
+HistoryEntry ::= SEQUENCE {
+    dayOfYear     Integer32,
+    dailyEntered  Integer32,  
+    dailyLeft     Integer32   
+}
+
+dayOfYear OBJECT-TYPE
+    SYNTAX Integer32 (1..365)
+    MAX-ACCESS read-write  
+    STATUS current
+    DESCRIPTION "The day of the year, defined as an integer ranging between 1 and 365"
+    ::= { historyEntry 1 }
+
+dailyEntered OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "The number of people that entered the room on that day"
+    ::= { historyEntry 2 }
+
+dailyLeft OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "The number of people that left the room on that day"
+    ::= { historyEntry 3 }
+
+END
